@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class ItemViewController: UITableViewController, UISearchBarDelegate {
+class ItemViewController: SwipeTableViewController {
 
 	let realm = try! Realm()
 
@@ -24,6 +24,8 @@ class ItemViewController: UITableViewController, UISearchBarDelegate {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 
+		tableView.rowHeight = 80
+		tableView.separatorStyle = .none
 	}
 
 	//MARK: TableView Datasource Methods
@@ -34,7 +36,7 @@ class ItemViewController: UITableViewController, UISearchBarDelegate {
 
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
-		let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath)
+		let cell = super.tableView(tableView, cellForRowAt: indexPath)
 
 		if let item = listItems?[indexPath.row] {
 			cell.textLabel?.text = item.title
@@ -110,6 +112,20 @@ class ItemViewController: UITableViewController, UISearchBarDelegate {
 		tableView.reloadData()
 	}
 
+	override func updateModel(at indexPath: IndexPath) {
+		if let itemForDeletion = self.listItems?[indexPath.row] {
+			do {
+				try self.realm.write {
+					self.realm.delete(itemForDeletion)
+				}
+			} catch {
+				print("Error deleting item, \(error)")
+			}
+		}
+	}
+}
+
+extension ItemViewController : UISearchBarDelegate {
 	//MARK: Search Bar Methods
 
 	func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -129,5 +145,4 @@ class ItemViewController: UITableViewController, UISearchBarDelegate {
 			}
 		}
 	}
-
 }
